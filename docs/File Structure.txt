@@ -1,0 +1,32 @@
+PetAdoption
+│
+├── backend
+│   └── PetAdoption.sln
+│       └── src
+│           ├── PetAdoption.API
+│           │   ├── Controllers
+│           │   │   ├── PetsController.cs
+│           │   │   ├── AdoptionsController.cs
+│           │   │   └── AiController.cs
+│           │   └── Program.cs
+│           │
+│           ├── PetAdoption.Application
+│           │   ├── Interfaces
+│           │   │   ├── Repositories
+│           │   │   └── Services
+│           │   ├── Services
+│           │   └── DTOs
+│           │
+│           ├── PetAdoption.Domain
+│           │   ├── Entities
+│           │   └── Enums
+│           │
+│           └── PetAdoption.Infrastructure
+│               ├── Data
+│               ├── Repositories
+│               └── AI
+│
+├── frontend
+│   └── petadoption-web
+│
+└── docs
