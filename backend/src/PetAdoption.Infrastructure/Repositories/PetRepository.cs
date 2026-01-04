@@ -27,28 +27,65 @@ namespace PetAdoption.Infrastructure.Repositories
 
         // Finding Pets in Nearby Selected Radius - Haversine Formula
         public async Task<IReadOnlyList<Pet>> GetNearbyAsync(
-        double latitude,
-        double longitude,
-        double radiusInKm)
+            double latitude,
+            double longitude,
+            double radiusInKm,
+            int skip,
+            int take,
+            string sortBy,
+            string sortOrder)
         {
-            // Avoid scanning whole table for invalid radius
-            if (radiusInKm <= 0) return Array.Empty<Pet>();
-
             const double EarthRadiusKm = 6371;
 
-            var pets = await _context.Pets
+            double latRad = latitude * Math.PI / 180;
+            double lonRad = longitude * Math.PI / 180;
+
+            // 1️⃣ Base query (DB-side filtering only)
+            var baseQuery = await _context.Pets
                 .Where(p => p.IsActive && p.Status == PetStatus.Available)
+                .ToListAsync();   // move to memory safely
+
+            // 2️⃣ Distance calculation (in-memory)
+            var nearbyPets = baseQuery
                 .Where(p =>
                     EarthRadiusKm * Math.Acos(
-                        Math.Cos(DegreesToRadians(latitude)) *
-                        Math.Cos(DegreesToRadians(p.Latitude)) *
-                        Math.Cos(DegreesToRadians(p.Longitude) - DegreesToRadians(longitude)) +
-                        Math.Sin(DegreesToRadians(latitude)) *
-                        Math.Sin(DegreesToRadians(p.Latitude))
-                    ) <= radiusInKm)
-                .ToListAsync();
+                        Math.Cos(latRad) *
+                        Math.Cos(p.Latitude * Math.PI / 180) *
+                        Math.Cos((p.Longitude * Math.PI / 180) - lonRad) +
+                        Math.Sin(latRad) *
+                        Math.Sin(p.Latitude * Math.PI / 180)
+                    ) <= radiusInKm
+                );
 
-            return pets;
+            // 3️⃣ Sorting
+            nearbyPets = ApplySorting(nearbyPets, sortBy, sortOrder);
+
+            // 4️⃣ Pagination
+            return nearbyPets
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+        }
+
+        private static IEnumerable<Pet> ApplySorting(
+        IEnumerable<Pet> query,
+        string sortBy,
+        string sortOrder)
+        {
+            bool isDesc = sortOrder.Equals("desc", StringComparison.OrdinalIgnoreCase);
+
+            return sortBy.ToLower() switch
+            {
+                "age" => isDesc
+                    ? query.OrderByDescending(p => p.AgeInMonths)
+                    : query.OrderBy(p => p.AgeInMonths),
+
+                "name" => isDesc
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+
+                _ => query.OrderBy(p => p.Name)
+            };
         }
 
         private static double DegreesToRadians(double degrees)

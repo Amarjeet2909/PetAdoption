@@ -6,6 +6,6 @@ namespace PetAdoption.Application.Interfaces.Repositories
     {
         Task<Pet?> GetByIdAsync(Guid id);
         Task AddAsync(Pet pet);
-        Task<IReadOnlyList<Pet>> GetNearbyAsync(double lat, double lon, double radiusInKilometer);
+        Task<IReadOnlyList<Pet>> GetNearbyAsync(double latitude,double longitude,double radiusInKm,int skip,int take,string sortBy,string sortOrder);
     }
 }
