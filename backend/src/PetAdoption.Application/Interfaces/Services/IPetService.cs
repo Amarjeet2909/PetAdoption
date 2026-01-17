@@ -22,7 +22,17 @@ namespace PetAdoption.Application.Interfaces.Services
          );
 
         Task<Pet?> GetPetByIdAsync(Guid id);
-        Task<IReadOnlyList<Pet>> FindNearbyPetsAsync(double latitude,double longitude,double radiusInKm,int pageNumber,int pageSize,string sortBy,string sortOrder);
+        Task<(IReadOnlyList<Pet> Pets, int TotalCount)> FindNearbyPetsAsync(
+            double latitude,
+            double longitude,
+            double radiusInKm,
+            int pageNumber,
+            int pageSize,
+            string sortBy,
+            string sortOrder,
+            Species? species,
+            Gender? gender,
+            bool? isVaccinated);
         Task AdoptPetAsync(Guid petId, Guid requesterOwnerId, string adoptedBy);
     }
 }

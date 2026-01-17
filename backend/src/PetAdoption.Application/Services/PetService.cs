@@ -43,23 +43,27 @@ namespace PetAdoption.Application.Services
         }
 
         // Finding pet Nearby user
-        public async Task<IReadOnlyList<Pet>> FindNearbyPetsAsync(
+        public async Task<(IReadOnlyList<Pet>, int)> FindNearbyPetsAsync(
             double latitude,
             double longitude,
             double radiusInKm,
             int pageNumber,
             int pageSize,
             string sortBy,
-            string sortOrder)
+            string sortOrder,
+            Species? species,
+            Gender? gender,
+            bool? isVaccinated)
         {
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             pageSize = pageSize <= 0 ? 10 : pageSize;
 
-            var skip = (pageNumber - 1) * pageSize;
+            int skip = (pageNumber - 1) * pageSize;
 
             _logger.LogInformation(
-                "Nearby pet search | Lat={Lat} Lon={Lon} Radius={Radius} Page={Page} Size={Size} Sort={Sort}",
-                latitude, longitude, radiusInKm, pageNumber, pageSize, sortBy);
+                "Nearby search | Lat={Lat} Lon={Lon} Radius={Radius} Page={Page} Size={Size} Filters={Filters}",
+                latitude, longitude, radiusInKm, pageNumber, pageSize,
+                new { species, gender, isVaccinated });
 
             return await _petRepository.GetNearbyAsync(
                 latitude,
@@ -68,8 +72,12 @@ namespace PetAdoption.Application.Services
                 skip,
                 pageSize,
                 sortBy,
-                sortOrder);
+                sortOrder,
+                species,
+                gender,
+                isVaccinated);
         }
+
 
         // Adopt a Pet
         public async Task AdoptPetAsync(Guid petId, Guid requesterOwnerId, string adoptedBy)

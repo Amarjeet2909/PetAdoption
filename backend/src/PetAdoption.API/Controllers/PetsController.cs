@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PetAdoption.API.Contracts.Common;
 using PetAdoption.API.Contracts.Pets;
-using PetAdoption.Application.Interfaces.Services;
 using PetAdoption.API.Mappings;
+using PetAdoption.Application.Interfaces.Services;
+using PetAdoption.Domain.Enums;
 
 namespace PetAdoption.API.Controllers
 {
@@ -63,25 +66,32 @@ namespace PetAdoption.API.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string sortBy = "name",
-            [FromQuery] string sortOrder = "asc")
+            [FromQuery] string sortOrder = "asc",
+            [FromQuery] Species? species = null,
+            [FromQuery] Gender? gender = null,
+            [FromQuery] bool? isVaccinated = null)
         {
-            var pets = await _petService.FindNearbyPetsAsync(
-                lat,
-                lon,
-                radius,
-                pageNumber,
-                pageSize,
-                sortBy,
-                sortOrder);
+            var (pets, totalCount) =
+                await _petService.FindNearbyPetsAsync(
+                    lat, lon, radius,
+                    pageNumber, pageSize,
+                    sortBy, sortOrder,
+                    species, gender, isVaccinated);
 
-            var response = pets
-                .Select(p => p.ToPetSummaryResponse())
-                .ToList();
+            var response = new PagedResponse<PetSummaryResponse>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                Items = pets.Select(p => p.ToPetSummaryResponse()).ToList()
+            };
 
             return Ok(response);
         }
 
+
         // POST: api/pets/{id}/adopt
+        [Authorize]
         [HttpPost("{id:guid}/adopt")]
         public async Task<IActionResult> AdoptPet(
             Guid id,
