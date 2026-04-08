@@ -61,6 +61,19 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreatePetRequestValidator>(
 builder.Services.AddEndpointsApiExplorer();
 
 // ===============================
+// CORS
+// ===============================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// ===============================
 // JWT Authentication
 // ===============================
 builder.Services
@@ -107,6 +120,8 @@ app.UseSerilogRequestLogging(options =>
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseRouting();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

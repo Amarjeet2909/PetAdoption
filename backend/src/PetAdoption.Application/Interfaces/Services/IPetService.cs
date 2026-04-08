@@ -21,6 +21,7 @@ namespace PetAdoption.Application.Interfaces.Services
             string createdBy
          );
 
+        Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetPetsAsync(int pageNumber, int pageSize);
         Task<Pet?> GetPetByIdAsync(Guid id);
         Task<(IReadOnlyList<Pet> Pets, int TotalCount)> FindNearbyPetsAsync(
             double latitude,

@@ -36,6 +36,19 @@ namespace PetAdoption.Application.Services
             return pet.Id;
         }
 
+        // Get All Pets (paged)
+        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetPetsAsync(int pageNumber, int pageSize)
+        {
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+            pageSize = pageSize <= 0 ? 10 : pageSize;
+
+            int skip = (pageNumber - 1) * pageSize;
+
+            _logger.LogInformation("Fetching all pets | Page={Page} Size={Size}", pageNumber, pageSize);
+
+            return await _petRepository.GetAllAsync(skip, pageSize);
+        }
+
         // Get Pet using ID
         public async Task<Pet?> GetPetByIdAsync(Guid petId)
         {

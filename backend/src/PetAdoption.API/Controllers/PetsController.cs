@@ -57,6 +57,25 @@ namespace PetAdoption.API.Controllers
             return Ok(pet.ToPetResponse());
         }
 
+        // GET: api/pets?pageNumber=1&pageSize=10
+        [HttpGet]
+        public async Task<IActionResult> GetPets(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var (pets, totalCount) = await _petService.GetPetsAsync(pageNumber, pageSize);
+
+            var response = new PagedResponse<PetSummaryResponse>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                Items = pets.Select(p => p.ToPetSummaryResponse()).ToList()
+            };
+
+            return Ok(response);
+        }
+
         // GET: api/pets/nearby?lat=..&lon=..&radius=..
         [HttpGet("nearby")]
         public async Task<IActionResult> FindNearbyPets(

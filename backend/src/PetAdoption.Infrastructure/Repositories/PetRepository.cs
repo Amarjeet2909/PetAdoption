@@ -25,6 +25,22 @@ namespace PetAdoption.Infrastructure.Repositories
             return await _context.Pets.FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetAllAsync(int skip, int take)
+        {
+            var query = _context.Pets
+                .Where(p => p.IsActive && p.Status == PetStatus.Available)
+                .OrderBy(p => p.Name);
+
+            int totalCount = await query.CountAsync();
+
+            var pets = await query
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return (pets, totalCount);
+        }
+
         // Finding Pets in Nearby Selected Radius - Haversine Formula
         public async Task<(IReadOnlyList<Pet>, int)> GetNearbyAsync(
             double latitude,
