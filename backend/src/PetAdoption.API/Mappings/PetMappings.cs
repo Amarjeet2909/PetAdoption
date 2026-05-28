@@ -20,7 +20,8 @@ namespace PetAdoption.API.Mappings
                 Longitude = pet.Longitude,
                 City = pet.City,
                 State = pet.State,
-                Status = pet.Status
+                Status = pet.Status,
+                PhotoUrls = pet.PhotoUrls
             };
         }
 
@@ -33,7 +34,8 @@ namespace PetAdoption.API.Mappings
                 Species = pet.Species,
                 AgeInMonths = pet.AgeInMonths,
                 City = pet.City,
-                Status = pet.Status
+                Status = pet.Status,
+                PhotoUrls = pet.PhotoUrls
             };
         }
     }

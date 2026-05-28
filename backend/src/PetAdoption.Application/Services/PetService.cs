@@ -13,7 +13,6 @@ namespace PetAdoption.Application.Services
         private readonly IPetRepository _petRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        // Constructor
         public PetService(IPetRepository petRepository, IUnitOfWork unitOfWork, ILogger<PetService> logger)
         {
             _petRepository = petRepository;
@@ -21,107 +20,125 @@ namespace PetAdoption.Application.Services
             _logger = logger;
         }
 
-        // Creating New Pet
         public async Task<Guid> CreatePetAsync(string name, Species species, int ageInMonths, Gender gender, bool isVaccinated,
-                                  string description, double latitude, double longitude, string city, string state,
-                                  Guid ownerId, string createdBy)
+            string description, double latitude, double longitude, string city, string state, Guid ownerId, string createdBy)
         {
-            // Creating the object of Domain Entity - Pet
             var pet = new Pet(name, species, ageInMonths, gender, isVaccinated, description, latitude, longitude, city, state, ownerId, createdBy);
 
             await _petRepository.AddAsync(pet);
             await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation("Pet Created Successfully | PetId={PetId} OwnerId={OwnerId} Species={Species}", pet.Id, pet.OwnerId, pet.Species);
+            _logger.LogInformation("Pet Created | PetId={PetId} OwnerId={OwnerId}", pet.Id, pet.OwnerId);
 
             return pet.Id;
         }
 
-        // Get All Pets (paged)
-        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetPetsAsync(int pageNumber, int pageSize)
+        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetPetsAsync(int pageNumber, int pageSize, string? search)
         {
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             pageSize = pageSize <= 0 ? 10 : pageSize;
-
             int skip = (pageNumber - 1) * pageSize;
 
-            _logger.LogInformation("Fetching all pets | Page={Page} Size={Size}", pageNumber, pageSize);
-
-            return await _petRepository.GetAllAsync(skip, pageSize);
+            return await _petRepository.GetAllAsync(skip, pageSize, search);
         }
 
-        // Get Pet using ID
+        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetMyPetsAsync(Guid ownerId, int pageNumber, int pageSize)
+        {
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+            pageSize = pageSize <= 0 ? 10 : pageSize;
+            int skip = (pageNumber - 1) * pageSize;
+
+            return await _petRepository.GetByOwnerAsync(ownerId, skip, pageSize);
+        }
+
+        public async Task<(IReadOnlyList<Pet> Pets, int TotalCount)> GetAdoptedPetsAsync(string adoptedByEmail, int pageNumber, int pageSize)
+        {
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+            pageSize = pageSize <= 0 ? 10 : pageSize;
+            int skip = (pageNumber - 1) * pageSize;
+
+            return await _petRepository.GetAdoptedByUserAsync(adoptedByEmail, skip, pageSize);
+        }
+
         public async Task<Pet?> GetPetByIdAsync(Guid petId)
         {
             return await _petRepository.GetByIdAsync(petId);
         }
 
-        // Finding pet Nearby user
+        public async Task UpdatePetAsync(Guid petId, Guid ownerId, string updatedBy,
+            string name, Species species, int ageInMonths, Gender gender,
+            bool isVaccinated, string description, double latitude, double longitude,
+            string city, string state)
+        {
+            var pet = await _petRepository.GetByIdAsync(petId);
+
+            if (pet == null)
+                throw new InvalidOperationException("Pet not found.");
+
+            if (pet.OwnerId != ownerId)
+                throw new UnauthorizedAccessException("You can only edit your own pets.");
+
+            pet.Update(name, species, ageInMonths, gender, isVaccinated, description, latitude, longitude, city, state, updatedBy);
+
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Pet Updated | PetId={PetId} UpdatedBy={UpdatedBy}", pet.Id, updatedBy);
+        }
+
+        public async Task UpdatePetPhotosAsync(Guid petId, List<string> photoUrls, string updatedBy)
+        {
+            var pet = await _petRepository.GetByIdAsync(petId)
+                ?? throw new InvalidOperationException("Pet not found.");
+
+            pet.SetPhotoUrls(photoUrls, updatedBy);
+
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Pet photos updated | PetId={PetId} Count={Count}", petId, photoUrls.Count);
+        }
+
+        public async Task DeletePetAsync(Guid petId, Guid ownerId, string deletedBy)
+        {
+            var pet = await _petRepository.GetByIdAsync(petId);
+
+            if (pet == null)
+                throw new InvalidOperationException("Pet not found.");
+
+            if (pet.OwnerId != ownerId)
+                throw new UnauthorizedAccessException("You can only delete your own pets.");
+
+            pet.Disable(deletedBy);
+
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Pet Deleted | PetId={PetId} DeletedBy={DeletedBy}", pet.Id, deletedBy);
+        }
+
         public async Task<(IReadOnlyList<Pet>, int)> FindNearbyPetsAsync(
-            double latitude,
-            double longitude,
-            double radiusInKm,
-            int pageNumber,
-            int pageSize,
-            string sortBy,
-            string sortOrder,
-            Species? species,
-            Gender? gender,
-            bool? isVaccinated)
+            double latitude, double longitude, double radiusInKm,
+            int pageNumber, int pageSize, string sortBy, string sortOrder,
+            Species? species, Gender? gender, bool? isVaccinated)
         {
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             pageSize = pageSize <= 0 ? 10 : pageSize;
-
             int skip = (pageNumber - 1) * pageSize;
 
-            _logger.LogInformation(
-                "Nearby search | Lat={Lat} Lon={Lon} Radius={Radius} Page={Page} Size={Size} Filters={Filters}",
-                latitude, longitude, radiusInKm, pageNumber, pageSize,
-                new { species, gender, isVaccinated });
-
-            return await _petRepository.GetNearbyAsync(
-                latitude,
-                longitude,
-                radiusInKm,
-                skip,
-                pageSize,
-                sortBy,
-                sortOrder,
-                species,
-                gender,
-                isVaccinated);
+            return await _petRepository.GetNearbyAsync(latitude, longitude, radiusInKm, skip, pageSize, sortBy, sortOrder, species, gender, isVaccinated);
         }
 
-
-        // Adopt a Pet
-        public async Task AdoptPetAsync(Guid petId, Guid requesterOwnerId, string adoptedBy)
+        public async Task AdoptPetAsync(Guid petId, Guid adopterId, string adoptedBy)
         {
-            // Getting Pet Details from DB
             var pet = await _petRepository.GetByIdAsync(petId);
 
-            if(pet == null)
-            {
-                _logger.LogWarning("Adoption failed | Pet not found | PetId={PetId} RequestedBy={RequestedBy}", petId, adoptedBy);
+            if (pet == null)
                 throw new InvalidOperationException("Pet not found");
-            }
 
-            if (pet.OwnerId != requesterOwnerId)
-            {
-                _logger.LogWarning("Unauthorized adoption attempt | PetId={PetId} OwnerId={OwnerId} RequestedBy={RequestedBy}", pet.Id, pet.OwnerId, requesterOwnerId);
-
-                throw new UnauthorizedAccessException("Only the pet owner can adopt this pet");
-            }
+            if (pet.OwnerId == adopterId)
+                throw new InvalidOperationException("You cannot adopt your own pet.");
 
             if (pet.Status == PetStatus.Adopted)
-            {
-                _logger.LogWarning("Adoption attempt on already adopted pet | PetId={PetId} RequestedBy={RequestedBy}", pet.Id, adoptedBy);
-
-                throw new InvalidOperationException("Pet is already adopted");
-            }
+                throw new InvalidOperationException("Pet is already adopted.");
 
             pet.MarkAsAdopted(adoptedBy);
 
             await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation("Pet adopted successfully | PetId={PetId} AdoptedBy={AdoptedBy}", pet.Id, adoptedBy);
+            _logger.LogInformation("Pet Adopted | PetId={PetId} AdoptedBy={AdoptedBy}", pet.Id, adoptedBy);
         }
     }
 }

@@ -12,8 +12,10 @@ using PetAdoption.Infrastructure.Persistence;
 using PetAdoption.Infrastructure.Repositories;
 using Serilog;
 using System.Text;
+using System.Text.Json.Serialization;
 using PetAdoption.Application.Interfaces.Security;
 using PetAdoption.Infrastructure.Security;
+using PetAdoption.Infrastructure.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,7 +41,11 @@ builder.Host.UseSerilog();
 // ===============================
 
 // Add Controllers (Web API)
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Infrastructure (DbContext, etc.)
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -52,6 +58,12 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPetRepository, PetRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IImageUploadService, CloudinaryImageService>();
+builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -89,7 +101,8 @@ builder.Services
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
     });
 
@@ -100,11 +113,6 @@ var app = builder.Build();
 // ===============================
 // Middleware Pipeline
 // ===============================
-
-// Comment this for now to avoid warning (optional)
-// app.UseHttpsRedirection();
-
-// Correlation middleware is a request-scoped context initializer - Adds identity to the request - Enables observability
 app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseSerilogRequestLogging(options =>

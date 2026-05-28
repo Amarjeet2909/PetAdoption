@@ -4,10 +4,17 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+    name: string;
     email: string;
     password: string;
 }
 
 export interface LoginResponse {
     token: string;
+    requiresVerification?: boolean;
+}
+
+export interface VerifyEmailRequest {
+    email: string;
+    code: string;
 }

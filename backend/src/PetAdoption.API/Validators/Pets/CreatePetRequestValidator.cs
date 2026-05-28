@@ -15,8 +15,6 @@ namespace PetAdoption.API.Validators.Pets
 
             RuleFor(x => x.Longitude).InclusiveBetween(-180, 180);
 
-            RuleFor(x => x.OwnerId).NotEmpty();
-
             RuleFor(x => x.Description).MaximumLength(500);
         }
     }

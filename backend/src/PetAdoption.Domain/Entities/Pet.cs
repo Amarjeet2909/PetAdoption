@@ -14,13 +14,13 @@ namespace PetAdoption.Domain.Entities
         public bool IsVaccinated { get; private set; }
         public string Description { get; private set; } = string.Empty;
 
-        // Location (Geospatial)
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
 
-        // Location (Readable)
         public string City { get; private set; } = string.Empty;
         public string State { get; private set; } = string.Empty;
+
+        public List<string> PhotoUrls { get; private set; } = new();
 
         public Guid OwnerId { get; private set; }
         public PetStatus Status { get; private set; }
@@ -29,30 +29,26 @@ namespace PetAdoption.Domain.Entities
         public DateTime? UpdatedAt { get; private set; }
         public string? UpdatedBy { get; private set; } = string.Empty;
 
-        // Needed for EF core when It will make empty instance of Pet
+        // EF Core needs this
         private Pet() { }
 
         // Constructor
-        public Pet(string name, 
-            Species species, 
-            int ageInMonths, 
-            Gender gender, 
-            bool isVaccinated, 
-            string description, 
-            double latitude, 
-            double longitude, 
-            string city, 
-            string state, 
-            Guid ownerId, 
+        public Pet(string name,
+            Species species,
+            int ageInMonths,
+            Gender gender,
+            bool isVaccinated,
+            string description,
+            double latitude,
+            double longitude,
+            string city,
+            string state,
+            Guid ownerId,
             string createdBy)
         {
-            //Lightweight Checks
             if (ageInMonths < 0) throw new ArgumentOutOfRangeException(nameof(ageInMonths));
-
             if (latitude < -90 || latitude > 90) throw new ArgumentOutOfRangeException(nameof(latitude));
-
             if (longitude < -180 || longitude > 180) throw new ArgumentOutOfRangeException(nameof(longitude));
-
             if (ownerId == Guid.Empty) throw new ArgumentException("OwnerId is required");
 
             Id = Guid.NewGuid();
@@ -73,27 +69,67 @@ namespace PetAdoption.Domain.Entities
             CreatedBy = createdBy;
         }
 
-        public void MarkAsAdopted(string updatedBy)
+        public void SetPhotoUrls(List<string> photoUrls, string updatedBy)
         {
-            if(Status == PetStatus.Adopted)
-            {
-                throw new InvalidOperationException("Pet is already adopted");
-            }
-            Status = PetStatus.Adopted;
+            if (photoUrls == null || photoUrls.Count == 0)
+                throw new ArgumentException("At least one photo is required.");
+
+            PhotoUrls = photoUrls;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
         }
 
-        public void Disable(string updatedBy)
+        public void AddPhotoUrls(List<string> newUrls, string updatedBy)
         {
-            if(Status == PetStatus.Disabled)
-            {
-                throw new InvalidOperationException("Pet is already disabled");
-            }
-            Status = PetStatus.Disabled;
-            IsActive = false;
+            PhotoUrls.AddRange(newUrls);
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
+        }
+
+        public void Update(
+            string name,
+            Species species,
+            int ageInMonths,
+            Gender gender,
+            bool isVaccinated,
+            string description,
+            double latitude,
+            double longitude,
+            string city,
+            string state,
+            string updatedBy)
+        {
+            if (Status == PetStatus.Adopted)
+                throw new InvalidOperationException("Cannot edit an adopted pet.");
+
+            if (ageInMonths < 0) throw new ArgumentOutOfRangeException(nameof(ageInMonths));
+            if (latitude < -90 || latitude > 90) throw new ArgumentOutOfRangeException(nameof(latitude));
+            if (longitude < -180 || longitude > 180) throw new ArgumentOutOfRangeException(nameof(longitude));
+
+            Name = name; Species = species; AgeInMonths = ageInMonths; Gender = gender;
+            IsVaccinated = isVaccinated; Description = description;
+            Latitude = latitude; Longitude = longitude; City = city; State = state;
+            UpdatedAt = DateTime.UtcNow; UpdatedBy = updatedBy;
+        }
+
+        public void MarkAsAdopted(string updatedBy)
+        {
+            if (Status == PetStatus.Adopted) throw new InvalidOperationException("Pet is already adopted");
+            Status = PetStatus.Adopted;
+            UpdatedAt = DateTime.UtcNow; UpdatedBy = updatedBy;
+        }
+
+        public void Disable(string updatedBy)
+        {
+            if (Status == PetStatus.Disabled) throw new InvalidOperationException("Pet is already disabled");
+            Status = PetStatus.Disabled; IsActive = false;
+            UpdatedAt = DateTime.UtcNow; UpdatedBy = updatedBy;
+        }
+
+        public void Enable(string updatedBy)
+        {
+            Status = PetStatus.Available; IsActive = true;
+            UpdatedAt = DateTime.UtcNow; UpdatedBy = updatedBy;
         }
     }
 }

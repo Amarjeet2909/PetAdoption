@@ -10,5 +10,6 @@ namespace PetAdoption.API.Contracts.Pets
         public int AgeInMonths { get; set; }
         public string City { get; set; } = string.Empty;
         public PetStatus Status { get; set; }
+        public List<string> PhotoUrls { get; set; } = new();
     }
 }
