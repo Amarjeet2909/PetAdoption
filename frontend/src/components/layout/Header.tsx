@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { isAdmin } from "../../utils/authUtils";
 
 export default function Header() {
-
     const navigate = useNavigate();
     const isLoggedIn = !!localStorage.getItem("token");
     const [showDropdown, setShowDropdown] = useState(false);
@@ -47,11 +46,12 @@ export default function Header() {
                     {isLoggedIn ? (
                         <div className="flex items-center gap-3">
                             <Link to="/pets/create" className="hover:text-orange-500 transition-colors">🐾 List Pet</Link>
+                            <Link to="/adoption-requests" className="hover:text-orange-500 transition-colors">📋 Requests</Link>
                             {isAdmin() && (
                                 <Link to="/admin" className="text-purple-600 hover:text-purple-700 transition-colors font-semibold">🛡️ Admin</Link>
                             )}
 
-                            {/* Profile — CLICK based */}
+                            {/* Profile Dropdown */}
                             <div className="relative" ref={dropdownRef}>
                                 <button
                                     onClick={() => setShowDropdown(!showDropdown)}
@@ -63,6 +63,7 @@ export default function Header() {
                                 {showDropdown && (
                                     <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-slideUp">
                                         <Link to="/my-pets" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"><span>🐶</span> My Pets</Link>
+                                        <Link to="/adoption-requests" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"><span>📋</span> Adoption Requests</Link>
                                         <Link to="/profile" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"><span>✏️</span> Edit Profile</Link>
                                         <Link to="/profile/delete" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-500 transition-colors"><span>🗑️</span> Delete Account</Link>
                                         {isAdmin() && (
@@ -102,6 +103,7 @@ export default function Header() {
                             <>
                                 <Link to="/pets/create" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors">➕ List Pet</Link>
                                 <Link to="/my-pets" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors">🐶 My Pets</Link>
+                                <Link to="/adoption-requests" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors">📋 Adoption Requests</Link>
                                 <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors">✏️ Profile</Link>
                                 {isAdmin() && (
                                     <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-xl text-sm font-semibold text-purple-600 hover:bg-purple-50 transition-colors">🛡️ Admin Panel</Link>

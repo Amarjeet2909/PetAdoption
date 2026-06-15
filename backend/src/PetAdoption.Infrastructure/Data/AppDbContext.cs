@@ -13,6 +13,7 @@ namespace PetAdoption.Infrastructure.Data
         public DbSet<Pet> Pets => Set<Pet>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Announcement> Announcements => Set<Announcement>();
+        public DbSet<AdoptionRequest> AdoptionRequests => Set<AdoptionRequest>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,13 @@ namespace PetAdoption.Infrastructure.Data
                         c => c.ToList()
                     )
                 );
+
+            // AdoptionRequest -> Pet (no cascade delete to avoid accidental data loss)
+            modelBuilder.Entity<AdoptionRequest>()
+                .HasOne(r => r.Pet)
+                .WithMany()
+                .HasForeignKey(r => r.PetId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

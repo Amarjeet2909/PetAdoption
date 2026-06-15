@@ -139,3 +139,18 @@ export interface AdminUser {
     role: string;
     createdAt: string;
 }
+
+// Adoption Request Workflow
+export interface AdoptionRequest {
+    id: string;
+    petId: string;
+    petName: string;
+    petPhotoUrls: string[];
+    adopterId: string;
+    adopterEmail: string;
+    adopterName: string;
+    message: string;
+    status: "Pending" | "Approved" | "Rejected" | "Cancelled";
+    createdAt: string;
+    respondedAt: string | null;
+}

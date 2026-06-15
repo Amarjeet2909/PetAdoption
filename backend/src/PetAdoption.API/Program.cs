@@ -64,6 +64,9 @@ builder.Services.AddScoped<IImageUploadService, CloudinaryImageService>();
 builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+// Adoption Request Workflow
+builder.Services.AddScoped<IAdoptionRequestRepository, AdoptionRequestRepository>();
+builder.Services.AddScoped<IAdoptionRequestService, AdoptionRequestService>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();

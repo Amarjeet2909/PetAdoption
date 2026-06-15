@@ -17,6 +17,7 @@ import MyPetsPage from "./pages/MyPetsPage";
 import ProfilePage from "./pages/ProfilePage";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import AdoptionRequestsPage from "./pages/AdoptionRequestsPage";
 
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
@@ -30,7 +31,7 @@ function App() {
                     {/* Public */}
                     <Route path="/" element={<HomePage />} />
 
-                    {/* Guest Only (redirect if logged in) */}
+                    {/* Guest Only */}
                     <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
                     <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
                     <Route path="/verify-email" element={<GuestRoute><VerifyEmailPage /></GuestRoute>} />
@@ -44,6 +45,7 @@ function App() {
                     <Route path="/my-pets" element={<ProtectedRoute><MyPetsPage /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/profile/delete" element={<ProtectedRoute><DeleteAccountPage /></ProtectedRoute>} />
+                    <Route path="/adoption-requests" element={<ProtectedRoute><AdoptionRequestsPage /></ProtectedRoute>} />
 
                     {/* Admin */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
