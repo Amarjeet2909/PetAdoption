@@ -1,0 +1,75 @@
+﻿# ══════════════════════════════════════════════════════════════════
+# Local Development — Docker Compose
+# Local dev mirrors production exactly:
+#   Production DB = Neon PostgreSQL
+#   Local DB      = PostgreSQL (same engine, same SQL dialect)
+#
+# Before first run:
+#   1. Copy .env.example → .env and fill values
+#   2. docker-compose up --build
+#   3. Run: dotnet ef database update (see README)
+# ══════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────
+  db:
+    image: postgres:16-alpine          # Lightweight Alpine-based image
+    container_name: petadoption-db
+    environment:
+      POSTGRES_DB: PetAdoptionDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"                    # Expose so EF migrations can run from host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── ASP.NET Core API ─────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: petadoption-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # PostgreSQL connection string
+      # "db" = service name above, Docker DNS resolves it automatically
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;
+        Port=5432;
+        Database=PetAdoptionDb;
+        Username=postgres;
+        Password=${POSTGRES_PASSWORD};
+
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+
+      Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME}
+      Cloudinary__ApiKey: ${CLOUDINARY_API_KEY}
+      Cloudinary__ApiSecret: ${CLOUDINARY_API_SECRET}
+
+      Email__SmtpHost: smtp.gmail.com
+      Email__SmtpPort: 587
+      Email__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      Email__SenderPassword: ${EMAIL_SENDER_PASSWORD}
+      Email__SenderName: PetAdopt
+
+      Google__ClientId: ${GOOGLE_CLIENT_ID}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

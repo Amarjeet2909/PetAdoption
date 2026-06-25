@@ -1,0 +1,26 @@
+# Build output - never needed inside image
+**/bin/
+**/obj/
+
+# Logs - ephemeral, shouldn't be in image
+**/Logs/
+
+# Git
+.git
+.gitignore
+
+# Visual Studio
+**/.vs/
+**/*.user
+**/*.suo
+
+# Test results
+**/TestResults/
+
+# Local settings (secrets must come from env vars, never baked in)
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Docker files themselves
+Dockerfile
+.dockerignore

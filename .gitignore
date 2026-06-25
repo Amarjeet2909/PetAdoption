@@ -90,3 +90,24 @@ coverage/
 # ===============================
 *.tmp
 *.temp
+
+# ── Secrets — NEVER commit these ──────────────────────────────
+.env
+frontend/.env.local
+frontend/.env.*.local
+
+# ── .NET Build output ─────────────────────────────────────────
+**/bin/
+**/obj/
+**/Logs/
+*.user
+.vs/
+
+# ── Node / Frontend ───────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
