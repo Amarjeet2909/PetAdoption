@@ -37,11 +37,6 @@ export default function RegisterPage() {
         setError("");
         setLoading(true);
         try {
-            // Use access_token to get id_token from Google
-            const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-            });
-            // Alternative: Use credential from CredentialResponse
             const result = await googleLogin(tokenResponse.access_token);
             localStorage.setItem("token", result.token);
             navigate("/pets");

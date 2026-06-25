@@ -4,10 +4,10 @@ import { getAdminDashboard, getAdminAnalytics, getRecentActivity, createAnnounce
 import type { AdminDashboardStats, AdminAnalytics, RecentActivity, Announcement } from "../../types/petTypes";
 import Loader from "../../components/ui/Loader";
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-    const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-    return (<div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ${color}`} style={{ width: `${pct}%` }} /></div>);
-}
+// function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
+//     const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+//     return (<div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden"><div className={`h-full rounded-full transition-all duration-1000 ${color}`} style={{ width: `${pct}%` }} /></div>);
+// }
 
 function BarChart({ data, color }: { data: { name: string; count: number }[]; color: string }) {
     const max = Math.max(...data.map(d => d.count), 1);
@@ -102,8 +102,7 @@ export default function AdminDashboardPage() {
     if (loading) return <Loader />;
     if (!stats || !analytics) return null;
 
-    const disabledPets = Math.max(stats.totalPets - stats.adoptedPets - stats.availablePets, 0);
-
+    // const _disabledPets = Math.max(stats.totalPets - stats.adoptedPets - stats.availablePets, 0);
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-slideUp">
 
