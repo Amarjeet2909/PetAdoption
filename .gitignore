@@ -38,6 +38,7 @@ wwwroot/dist/
 # Environment-specific settings
 appsettings.Development.json
 appsettings.Local.json
+appsettings.json
 
 # ===============================
 # EF Core
