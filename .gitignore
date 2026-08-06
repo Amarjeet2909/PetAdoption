@@ -94,8 +94,19 @@ coverage/
 
 # ── Secrets — NEVER commit these ──────────────────────────────
 .env
+.env.local
 frontend/.env.local
 frontend/.env.*.local
+
+# ── ASP.NET Core secrets ───────────────────────────────────────
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+
+# NOTE: appsettings.json is committed but contains NO real values
+# Real values come from:
+#   Local dev  → dotnet user-secrets
+#   Production → Render environment variables
 
 # ── .NET Build output ─────────────────────────────────────────
 **/bin/
